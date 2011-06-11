@@ -34,11 +34,16 @@ int main (int argc, char **argv) {
 	counter = 0;
 	oneTimeBarrier = numThreads;
 	lock = new Lock();
+
 	// Spawn threads;
 	vector<pthread_t> threads(numThreads);
 	vector<ThreadArgs> args(numThreads);
 	for (int i = 0; i < numThreads; ++i) {
 		args[i].work = targetSum/numThreads;
+		if(i == 0) {
+			// Account for remainder from integer division.
+			args[i].work += targetSum % numThreads;
+		}
 		pthread_create(&(threads[i]), NULL, thread_kernel, &(args[i]));
 	}
 	
