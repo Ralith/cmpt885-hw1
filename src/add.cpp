@@ -1,7 +1,7 @@
 //#include <ctype.h>
 //#include <stdio.h>
 #include <stdlib.h>
-//#include <unistd.h>
+#include <unistd.h>
 #include "hrtime.h"
 #include <iostream>
 #include <vector>
@@ -73,17 +73,22 @@ void setArgs(int argc, char **argv) {
 	
 	numThreads = DEFAULT_THREADS;
 	targetSum = DEFAULT_TARGETSUM;
-	
-	/* todo code to parse for command line options
-	   for now assume that first argument is threads; 2nd is target sum
-	*/
-	
-	if (argc > 1) {
-		// -t #cores
-		numThreads = atoi(argv[1]);
-	}
-	if (argc > 2) {
-		// -i #targetSum
-		targetSum = atoi(argv[2]);
+
+	int opt;
+	while((opt = getopt(argc, argv, "t:i:")) != -1) {
+		switch(opt) {
+		case 't':
+			numThreads = atoi(optarg);
+			break;
+
+		case 'i':
+			targetSum = atoi(optarg);
+			break;
+
+		default:
+			fprintf(stderr, "Usage: %s [-t threads] [-i sum]\n");
+			exit(EXIT_FAILURE);
+			break;
+		}
 	}
 }
