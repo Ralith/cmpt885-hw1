@@ -10,3 +10,6 @@
 #ifdef ___tatasLock___
 #include "tatasLock.hpp"
 #endif
+#ifdef ___ticketLock___
+#include "ticketLock.hpp"
+#endif
