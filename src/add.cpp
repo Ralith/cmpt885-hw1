@@ -91,7 +91,7 @@ void setArgs(int argc, char **argv) {
 			break;
 
 		default:
-			fprintf(stderr, "Usage: %s [-t threads] [-i sum]\n");
+		  fprintf(stderr, "Usage: %s [-t threads] [-i sum]\n", argv[0]);
 			exit(EXIT_FAILURE);
 			break;
 		}
