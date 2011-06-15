@@ -1,8 +1,8 @@
 //#include <ctype.h>
 #include <cstdio>
+#include <ctime>
 #include <stdlib.h>
 #include <unistd.h>
-#include "hrtime.h"
 #include <iostream>
 #include <vector>
 #include <pthread.h>
@@ -18,7 +18,7 @@ volatile int counter;
 volatile int oneTimeBarrier;
 Lock* lock;
 
-unsigned long long start, stop;
+clock_t start, stop;
 
 void setArgs(int argc, char **argv);
 void* thread_kernel(void *args);
@@ -51,10 +51,10 @@ int main (int argc, char **argv) {
 	for (int i = 0; i < numThreads; ++i) {
 		pthread_join(threads[i], NULL);		// wait for threads to finish
 	}
-	stop = getElapsedTime();
+	stop = clock();
 	
 	cout << "sum:"<< counter << endl;
-	cout << "time:"<< (stop-start)/1000 << endl;
+	cout << "time:"<< ((double)(stop-start))/CLOCKS_PER_SEC << endl;
 }
 
 
@@ -64,7 +64,7 @@ void* thread_kernel(void *args) {
 	int myVal = __sync_sub_and_fetch(&oneTimeBarrier,1);
 	while(oneTimeBarrier);
 	if (myVal == 0) {
-		start = getElapsedTime();
+		start = clock();
 	}
 	for (int i = 0; i < work; ++i) {
 		lock->lock();
