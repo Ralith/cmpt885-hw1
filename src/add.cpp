@@ -54,7 +54,7 @@ int main (int argc, char **argv) {
 	gettimeofday(&stop, NULL);
 	
 	cout << "sum:"<< counter << endl;
-	cout << "time:"<< (stop.tv_sec - start.tv_sec) + (stop.tv_usec - start.tv_usec)*1e-6 << endl;
+	cout << "time:"<< (stop.tv_sec - start.tv_sec)*((int)1e6) + (stop.tv_usec - start.tv_usec) << endl;
 }
 
 
