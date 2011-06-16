@@ -16,7 +16,7 @@ int numThreads;
 int targetSum;
 volatile int counter;
 volatile int oneTimeBarrier;
-Lock* lock;
+
 
 struct timeval start, stop;
 
@@ -33,7 +33,6 @@ int main (int argc, char **argv) {
 	setArgs(argc, argv);
 	counter = 0;
 	oneTimeBarrier = numThreads;
-	lock = new Lock();
 
 	// Spawn threads;
 	vector<pthread_t> threads(numThreads);

@@ -16,7 +16,7 @@ int numThreads;
 int targetSum;
 volatile int counter;
 volatile int oneTimeBarrier;
-Lock* lock;
+
 
 struct timeval start, stop;
 
@@ -33,7 +33,7 @@ int main (int argc, char **argv) {
 	setArgs(argc, argv);
 	counter = 0;
 	oneTimeBarrier = numThreads;
-	lock = new Lock();
+
 
 	// Spawn threads;
 	vector<pthread_t> threads(numThreads);
@@ -68,7 +68,9 @@ void* thread_kernel(void *args) {
 	}
 	for (int i = 0; i < work; ++i) {
 		int myCnt = counter;
-		while (__sync_bool_compare_and_swap(&Counter, myCnt, ++myCnt);
+		while (!__sync_bool_compare_and_swap(&counter, myCnt, myCnt+1)) {
+			myCnt = counter;
+		}
 	}
 }
 
