@@ -2,7 +2,7 @@
 
 MAXTHREADS=24
 SUM=1000000
-INCREMENT=3
+INCREMENT=2
 ITERATIONS=5
 CPUS=4
 CORES=6
@@ -12,7 +12,7 @@ if [ `uname` = 'Darwin' ]; then
     ITERCOUNTER="jot - 1 $ITERATIONS"
 else
     THRCOUNTER="seq 1 $INCREMENT $MAXTHREADS"
-    ITERCOUNTER="jot - 1 $ITERATIONS"
+    ITERCOUNTER="seq 1 $ITERATIONS"
 fi
 
 ALLCORES="`seq -s , 0 $CPUS $[$CPUS*$CORES-1]`,`seq -s , 1 $CPUS $[$CPUS*$CORES-1]`,`seq -s , 2 $CPUS $[$CPUS*$CORES-1]`,`seq -s , 3 $CPUS $[$CPUS*$CORES-1]`"
