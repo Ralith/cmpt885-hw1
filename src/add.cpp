@@ -1,6 +1,6 @@
 //#include <ctype.h>
 #include <cstdio>
-#include <ctime>
+#include <sys/time.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
@@ -18,7 +18,7 @@ volatile int counter;
 volatile int oneTimeBarrier;
 Lock* lock;
 
-clock_t start, stop;
+struct timeval start, stop;
 
 void setArgs(int argc, char **argv);
 void* thread_kernel(void *args);
@@ -51,10 +51,10 @@ int main (int argc, char **argv) {
 	for (int i = 0; i < numThreads; ++i) {
 		pthread_join(threads[i], NULL);		// wait for threads to finish
 	}
-	stop = clock();
+	gettimeofday(&stop, NULL);
 	
 	cout << "sum:"<< counter << endl;
-	cout << "time:"<< ((double)(stop-start))/CLOCKS_PER_SEC << endl;
+	cout << "time:"<< (stop.tv_sec - start.tv_sec) + (stop.tv_usec - start.tv_usec)*1e-6 << endl;
 }
 
 
@@ -64,7 +64,7 @@ void* thread_kernel(void *args) {
 	int myVal = __sync_sub_and_fetch(&oneTimeBarrier,1);
 	while(oneTimeBarrier);
 	if (myVal == 0) {
-		start = clock();
+		gettimeofday(&start, NULL);
 	}
 	for (int i = 0; i < work; ++i) {
 		lock->lock();
