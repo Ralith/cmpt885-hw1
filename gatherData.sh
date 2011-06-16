@@ -22,7 +22,7 @@ for PROG in bin/counter/*; do
     for THREADS in `$THRCOUNTER`; do
         for ITERATION in `$ITERCOUNTER`; do
 	    COREIDS=`echo $ALLCORES |cut -d , -f -$THREADS`
-	    read RESULT TIME <<< `taskset -c $COREIDS $CORES $PROG -t $THREADS -i $SUM |cut -d : -f 2`
+	    read RESULT TIME <<< `taskset -c $COREIDS $PROG -t $THREADS -i $SUM |cut -d : -f 2`
 	    echo -e "`basename $PROG`\t${ITERATION}\t${THREADS}\t${TIME}"
         done
     done
