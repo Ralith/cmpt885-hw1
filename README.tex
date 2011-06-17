@@ -1,0 +1,51 @@
+\documentclass[letterpaper]{article}
+\usepackage[dvips]{geometry}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+
+\fancyhf{}
+\headheight 15pt
+\fancyhead[L]{Benjamin Saunders, Mark Roth}
+\fancyhead[R]{CMPT885 Assignment 1 Part 1}
+\fancyfoot[C]{\thepage}
+
+\begin{document}
+\pagestyle{fancy}
+\subsection*{Procedure}
+We configured the adder to target a constant sum across all runs, increasing the number of threads used up to but not above the number of cores available on the system, and performing five runs for each individual configuration to allow any variance in results to be accounted for.
+We attempted to bind the threads created by each run to a specific set of cores using the \texttt{taskset} utility, both to limit scheduler overhead and to provide data on the effect of crossing from multiple cores on one CPU to multiple CPUs on the 24-core system.
+However, these efforts were stymied by unpredictable behavior in that utility causing cores and/or threads to under certain circumstances not be used, leading to the ticket and Anderson queue locks blocking for what appeared to be an indefinite period.
+In the interest of gathering a complete and unbiased data set, we restarted the tests using no core binding.
+
+An Anderson queue lock was used in place of an MCS lock due to challenges encountered in making use of the supplied implementation, whose extensive platform-specific code appeared to not interact well with our test systems.
+Additionally, we tested use of the atomic add instruction and compare-and-swap to concurrently increment the counter without locking for comparison with the variety of lock-oriented approaches.
+
+\subsection*{Conclusions}
+It's immediately obvious from \texttt{noLock}'s results in all three tests that taking no measures to account for simultaneous access at all produces the fastest code.
+Of course, it also produces a corrupted value, and so is of limited use any circumstance where simultaneous access may occur.
+\texttt{atomicAdd} is clearly the fastest safe solution, clearly demonstrating the benefit of a lockless solution, although most real-world problems do not lend themselves to such simple and direct use of atomic instructions.
+As demonstrated by \texttt{casAdd}, even a slightly less closely-fit use of an atomic instruction can have significant costs; here, it appears that the compare-and-swap instruction's tendency to fail and require another attempt makes it much less efficient than a straightforward guaranteed-success atomic add.
+This contention happens more frequently as the number of threads increases, explaining \texttt{casAdd}'s gradual rise in cost as the thread count increases which \texttt{atomicAdd} does not appear to suffer.
+
+Next most efficient is the use of pthread mutexes, which exhibits the interesting behavior of becoming somewhat cheaper as the thread count increases, up to the point of competing favorably with the lockless \texttt{casAdd}.  This is likely a product of the mutex causing threads to sleep when the lock is under sufficient contention, as happens most frequently with many threads.  This allows a single thread to proceed uninterrupted for a relatively long period with no contention at all, thus making efficient use of CPU time.
+
+Entirely opposite from pthread mutexes, both \texttt{tasLock} and \texttt{casLock} benefit from low overhead but suffer badly under contention, and thus the cost of their use escalates rapidly with the number of threads at work.  It's unclear why \texttt{tasLock} is significantly more costly, given that its implementation is nearly isomorphic to that of its companion.  Meanwhile, \texttt{tatasLock}'s more elaborate locking procedure appears to come at the price of somewhat increased overhead, but clearly pays off as contention increases, visible around ten threads in our testing, as it appears to increase in cost very little as the number of threads rises.
+
+Our queue and ticket locks are the worst performers for the majority of the tested range.  In particular, \texttt{ticketLock} performs very badly, becoming rapidly more expensive as the number of threads increases, falling behind all others by five threads at the latest in our tests.  It suffers this as a result of high contention on a single shared variable and as a result of the strict FIFO ordering it enforces.  \texttt{andersonLock} is more successful, having very little increased cost as the number of threads increases, which allows it to eventually outstrip more rapidly-slowing implementations such as \texttt{tasLock}.  Of particular interest in \texttt{andersonLock}'s case is not just its unexpectedly poor low-thread performance, suggesting a possible implementation error, but the fact that its performance is actually much more competitive on the Intel Xeon test system, remaining much closer to the other locks and even outstripping pthread mutexes for a large part of the tested range (although extrapolation suggests that it would ultimately fail to keep up if threadcount continued to rise), while the AMD system places it firmly in second-to-last place for most of the tests.  We speculate that this, as well as the relatively slow performance of the other locks on the Xeon, is the result of architectural differences.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{sharedCounterGraph.pdf}
+\caption{Lock performance}
+\end{figure*}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{sharedCounterGraphZoom.pdf}
+\caption{Close-up}
+\end{figure*}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.0\textwidth]{intelXeon8Core.pdf}
+\caption{Re-ran on a Xeon}
+\end{figure*}
+\end{document}
