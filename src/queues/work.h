@@ -1,0 +1,2 @@
+
+void workKernel(int n);
